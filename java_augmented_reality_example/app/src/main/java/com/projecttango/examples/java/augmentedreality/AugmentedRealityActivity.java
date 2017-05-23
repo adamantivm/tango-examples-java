@@ -42,6 +42,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Display;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.Toast;
 
 import org.rajawali3d.scene.ASceneFrameCallback;
@@ -73,7 +75,7 @@ import com.projecttango.tangosupport.TangoSupport;
  * If you're looking for a more stripped down example that doesn't use a rendering library like
  * Rajawali, see java_hello_video_example.
  */
-public class AugmentedRealityActivity extends Activity {
+public class AugmentedRealityActivity extends Activity implements View.OnTouchListener {
     private static final String TAG = AugmentedRealityActivity.class.getSimpleName();
     private static final int INVALID_TEXTURE_ID = 0;
 
@@ -100,6 +102,7 @@ public class AugmentedRealityActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mSurfaceView = (SurfaceView) findViewById(R.id.surfaceview);
+        mSurfaceView.setOnTouchListener(this);
         mRenderer = new AugmentedRealityRenderer(this);
 
         DisplayManager displayManager = (DisplayManager) getSystemService(DISPLAY_SERVICE);
@@ -520,5 +523,11 @@ public class AugmentedRealityActivity extends Activity {
                 finish();
             }
         });
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        mRenderer.onTouchEvent(motionEvent);
+        return true;
     }
 }

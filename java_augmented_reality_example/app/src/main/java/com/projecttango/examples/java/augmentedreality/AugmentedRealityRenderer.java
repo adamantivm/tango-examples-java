@@ -19,6 +19,7 @@ import com.google.atap.tangoservice.TangoPoseData;
 
 import android.content.Context;
 
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -41,6 +42,8 @@ import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.primitives.ScreenQuad;
 import org.rajawali3d.primitives.Sphere;
 import org.rajawali3d.renderer.Renderer;
+import org.rajawali3d.util.ObjectColorPicker;
+import org.rajawali3d.util.OnObjectPickedListener;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -52,7 +55,7 @@ import com.projecttango.tangosupport.TangoSupport;
  * rendered and a sphere with the texture of the earth floats ahead of the start position of
  * the Tango device.
  */
-public class AugmentedRealityRenderer extends Renderer {
+public class AugmentedRealityRenderer extends Renderer implements OnObjectPickedListener {
     private static final String TAG = AugmentedRealityRenderer.class.getSimpleName();
 
     private float[] textureCoords0 = new float[]{0.0F, 1.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F, 0.0F};
@@ -65,12 +68,17 @@ public class AugmentedRealityRenderer extends Renderer {
 
     private ScreenQuad mBackgroundQuad;
 
+    private ObjectColorPicker mOnePicker;
+
     public AugmentedRealityRenderer(Context context) {
         super(context);
     }
 
     @Override
     protected void initScene() {
+        mOnePicker = new ObjectColorPicker(this);
+        mOnePicker.setOnObjectPickedListener(this);
+
         // Create a quad covering the whole background and assign a texture to it where the
         // Tango color camera contents will be rendered.
         Material tangoCameraMaterial = new Material();
@@ -159,6 +167,10 @@ public class AugmentedRealityRenderer extends Renderer {
         translationMoon.setTransformable3D(moon);
         getCurrentScene().registerAnimation(translationMoon);
         translationMoon.play();
+
+        mOnePicker.registerObject(earth);
+        mOnePicker.registerObject(moon);
+        mOnePicker.registerObject(mBackgroundQuad);
     }
 
     /**
@@ -233,6 +245,19 @@ public class AugmentedRealityRenderer extends Renderer {
 
     @Override
     public void onTouchEvent(MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.d(TAG, "---> pick attempt at (" + event.getX() + "," + event.getY());
+            mOnePicker.getObjectAt(event.getX(), event.getY());
+        }
+    }
 
+    @Override
+    public void onObjectPicked(@NonNull Object3D object) {
+        Log.d(TAG, "Picked: " + object);
+    }
+
+    @Override
+    public void onNoObjectPicked() {
+        Log.d(TAG, "Picked no object");
     }
 }
